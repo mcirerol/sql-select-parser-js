@@ -1,0 +1,76 @@
+<html>
+
+<head>
+    <title>SQL Parser</title>
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Quicksand" />
+
+    <!-- lib -->
+    <script type="text/javascript" src="/build/sql.parser.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+        crossorigin="anonymous"></script>
+
+    <!-- src dev
+    <script type="text/javascript" src="/pretty-json-debug.js" ></script>
+    -->
+    <!-- src build -->
+
+    <!-- just css for this page example -->
+    <style type="text/css">
+        body {
+            width: 700px;
+            border-style: none;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        textarea {
+            width: 600px;
+            padding: 4px 7px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            color: #333;
+            margin-bottom: 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        $(document).ready(function () {
+            var el = {
+                btnAction: $('#action'),
+                btnClear: $('#clear'),
+                input: $('#input'),
+                result: $('#result')
+            };
+            el.btnAction.on('click', function () {
+                var query = el.input.val();
+                var object;
+                try { object = parseQuery(query); }
+                catch (e) {
+                    alert('an error has ocurred');
+                    return;
+                }
+
+                var json = JSON.stringify(object, null, ' ');
+                el.result.val( json);
+
+            });
+            el.btnClear.on('click', function () {
+                el.input.val('');
+                el.result.val('');
+            });
+        });
+    </script>
+    <h1>SQL Select Parser</h1>
+    <textarea id="input" rows="12"></textarea>
+    <br/>
+    <button id="action">go</button>
+    <button id="clear">clear</button>
+    <br/>
+    <br/>
+    <textarea id="result" rows="12"></textarea>
+</body>
+
+</html>

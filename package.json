@@ -1,0 +1,23 @@
+{
+  "name": "sql-select-parser-js",
+  "version": "1.0.0",
+  "description": "Parser to get select, from, where and order elements from a sql select statment",
+  "main": "sql.parser.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcirerol/sql-select-parser-js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mcirerol/sql-select-parser-js/issues"
+  },
+  "homepage": "https://github.com/mcirerol/sql-select-parser-js#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.0"
+  }
+}

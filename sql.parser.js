@@ -247,5 +247,3 @@ function sanizateQuery(query) {
 function getJson(query){
     return JSON.stringify(parseQuery(query));
 }
-
-module.exports = getJson;
