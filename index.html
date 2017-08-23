@@ -44,6 +44,21 @@
                 input: $('#input'),
                 result: $('#result')
             };
+            var example = `SELECT  P.ProductID, 
+ P.Name, 
+ P.ListPrice, 
+ P.Size, 
+ P.ModifiedDate, 
+ SOD.UnitPrice, 
+ SOD.UnitPriceDiscount,
+ SOD.OrderQty,
+ SOD.LineTotal 
+FROM Sales.SalesOrderDetail SOD 
+LEFT JOIN Production.Product P 
+WHERE SOD.UnitPrice > 3500 
+AND SOD.OrderQty = @OrderQty
+ORDER BY SOD.UnitPrice DESC`;
+            el.input.val(example);
             el.btnAction.on('click', function () {
                 var query = el.input.val();
                 var object;
@@ -54,7 +69,7 @@
                 }
 
                 var json = JSON.stringify(object, null, ' ');
-                el.result.val( json);
+                el.result.val(json);
 
             });
             el.btnClear.on('click', function () {
