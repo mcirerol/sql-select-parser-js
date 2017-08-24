@@ -93,7 +93,7 @@ function getSelectElements(section) {
 }
 
 function getFromElements(section) {
-    const separator = '(left|right|inner|full)?(\\s+outer)?\\s+join';
+    const separator = '(left|right|inner|full|cross)?(\\s+outer)?\\s+join';
     const parser = new Parser(separator, section);
     let sections = parser.getSections();
     if (sections[0]) {
@@ -119,11 +119,11 @@ function convertCondition(value, condition, index, conditions) {
     const res = /(@\w+)/ig.exec(condition);
     if (res != null) {
         const parameter = res[0].slice(1);
-        const resOperator = new Parser('\\s+and\\s+|\\s+or\\s+', condition).nextOcurrence(0);
+        const resOperator = new Parser('^(and)\\s+|^(or)\\s+', condition).nextOcurrence(0);
         let operator = ' and ';
         let valueCondition = condition;
         if (resOperator != null) {
-            operator = resOperator.match;
+            operator = ' ' + resOperator.match;
             valueCondition = condition.slice(resOperator.index + resOperator.match.length);
         }
         const conditionObject = {
@@ -151,7 +151,13 @@ function convertCondition(value, condition, index, conditions) {
         if (value.PreCondition != null) {
             value.PreCondition += " " + condition;
         } else {
-            value.PreCondition = condition;
+            const resOperator = new Parser('^(and)\\s+|^(or)\\s+', condition).nextOcurrence(0);
+            if(resOperator == null){
+                value.PreCondition = condition;
+            }else{
+                value.PreCondition = condition.slice(resOperator.index + resOperator.match.length);
+            }
+            
         }
         return value;
     }
