@@ -107,7 +107,7 @@ function getSelectElements(section) {
 }
 
 function getFromElements(section) {
-    var separator = '(left|right|inner|full)?(\\s+outer)?\\s+join';
+    var separator = '(left|right|inner|full|cross)?(\\s+outer)?\\s+join';
     var parser = new Parser(separator, section);
     var sections = parser.getSections();
     if (sections[0]) {
@@ -133,11 +133,11 @@ function convertCondition(value, condition, index, conditions) {
     var res = /(@\w+)/ig.exec(condition);
     if (res != null) {
         var parameter = res[0].slice(1);
-        var resOperator = new Parser('\\s+and\\s+|\\s+or\\s+', condition).nextOcurrence(0);
+        var resOperator = new Parser('^(and)\\s+|^(or)\\s+', condition).nextOcurrence(0);
         var operator = ' and ';
         var valueCondition = condition;
         if (resOperator != null) {
-            operator = resOperator.match;
+            operator = ' ' + resOperator.match;
             valueCondition = condition.slice(resOperator.index + resOperator.match.length);
         }
         var conditionObject = {
@@ -163,7 +163,12 @@ function convertCondition(value, condition, index, conditions) {
         if (value.PreCondition != null) {
             value.PreCondition += " " + condition;
         } else {
-            value.PreCondition = condition;
+            var _resOperator = new Parser('^(and)\\s+|^(or)\\s+', condition).nextOcurrence(0);
+            if (_resOperator == null) {
+                value.PreCondition = condition;
+            } else {
+                value.PreCondition = condition.slice(_resOperator.index + _resOperator.match.length);
+            }
         }
         return value;
     }
