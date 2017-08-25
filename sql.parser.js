@@ -152,12 +152,12 @@ function convertCondition(value, condition, index, conditions) {
             value.PreCondition += " " + condition;
         } else {
             const resOperator = new Parser('^(and)\\s+|^(or)\\s+', condition).nextOcurrence(0);
-            if(resOperator == null){
+            if (resOperator == null) {
                 value.PreCondition = condition;
-            }else{
+            } else {
                 value.PreCondition = condition.slice(resOperator.index + resOperator.match.length);
             }
-            
+
         }
         return value;
     }
@@ -190,8 +190,40 @@ function eliminateComma(section, index) {
     }
 }
 
+function getVariables(query) {
+    const res = query.match(/(\/\*[^*]*\*\/)/ig);
+    let vars = {};
+    if (res != null) {
+        vars = res.reduce(getVarsFromComments, {});
+        console.log('vars', vars);
+    }
+    return vars;
+};
+
+function getVarsFromComments(vars, comment, index, comments) {
+    Object.assign(vars, getVars(comment));
+    return vars;
+}
+
+function getVars(comment) {
+    const result = comment.match(/((\w+)\s*=\s*(\w+))/ig);
+    const vars = {};
+    if (result != null) {
+        result.forEach(match => {
+            const res = /(\w+)\s*=\s*(\w+)/ig.exec(match);
+            if (res != null) {
+
+                vars[res[1]] = res[2];
+            }
+        })
+
+    }
+    return vars;
+}
+
 function parseQuery(query, farm, label, idProperty) {
     query = sanizateQuery(query);
+    const vars = getVariables(query);
     const selectClause = parseSection(query, 'select', 'from');
     const selects = getSelectElements(selectClause);
     const fromClause = parseSection(query, 'from', 'where|order\\s+by');
@@ -208,20 +240,19 @@ function parseQuery(query, farm, label, idProperty) {
     }
 
     const metadata = {
-        farm,
-        Label: label,
-        IdProperty: idProperty,
-        Get: [{
-            Columns: selects,
-            Joins: joins,
-        }]
-    }
+    };
+    Object.assign(metadata, vars);
+    metadata['Get'] = [{
+        Columns: selects,
+        Joins: joins,
+    }]
     if (conditions != null) {
         Object.assign(metadata.Get[0], conditions);
     }
-    if(orders){
+    if (orders) {
         metadata.Order = orders;
     }
+    
 
     return metadata;
 
@@ -250,6 +281,23 @@ function sanizateQuery(query) {
     return query.replace(/\s+/ig, ' ');
 }
 
-function getJson(query){
+const query = `SELECT /* farm= SB label= idProperty */ P.ProductID, 
+ P.Name, 
+ P.ListPrice, 
+ P.Size /* naa */, 
+ P.ModifiedDate /* wee =  */, 
+ SOD.UnitPrice, 
+ SOD.UnitPriceDiscount,
+ SOD.OrderQty,
+ SOD.LineTotal 
+FROM Sales.SalesOrderDetail SOD 
+LEFT /* asd = asd */JOIN Production.Product P 
+WHERE SOD.UnitPrice > 3500 
+AND SOD.OrderQty = @OrderQty
+ORDER BY SOD.UnitPrice DESC`
+
+function getJson(query) {
     return JSON.stringify(parseQuery(query));
 }
+
+console.log(getJson(query));

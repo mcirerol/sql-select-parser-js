@@ -199,8 +199,39 @@ function eliminateComma(section, index) {
     }
 }
 
+function getVariables(query) {
+    var res = query.match(/(\/\*[^*]*\*\/)/ig);
+    var vars = {};
+    if (res != null) {
+        vars = res.reduce(getVarsFromComments, {});
+        console.log('vars', vars);
+    }
+    return vars;
+};
+
+function getVarsFromComments(vars, comment, index, comments) {
+    Object.assign(vars, getVars(comment));
+    return vars;
+}
+
+function getVars(comment) {
+    var result = comment.match(/((\w+)\s*=\s*(\w+))/ig);
+    var vars = {};
+    if (result != null) {
+        result.forEach(function (match) {
+            var res = /(\w+)\s*=\s*(\w+)/ig.exec(match);
+            if (res != null) {
+
+                vars[res[1]] = res[2];
+            }
+        });
+    }
+    return vars;
+}
+
 function parseQuery(query, farm, label, idProperty) {
     query = sanizateQuery(query);
+    var vars = getVariables(query);
     var selectClause = parseSection(query, 'select', 'from');
     var selects = getSelectElements(selectClause);
     var fromClause = parseSection(query, 'from', 'where|order\\s+by');
@@ -216,15 +247,12 @@ function parseQuery(query, farm, label, idProperty) {
         orders = getOrderByElements(orderClause);
     }
 
-    var metadata = {
-        farm: farm,
-        Label: label,
-        IdProperty: idProperty,
-        Get: [{
-            Columns: selects,
-            Joins: joins
-        }]
-    };
+    var metadata = {};
+    Object.assign(metadata, vars);
+    metadata['Get'] = [{
+        Columns: selects,
+        Joins: joins
+    }];
     if (conditions != null) {
         Object.assign(metadata.Get[0], conditions);
     }
@@ -258,6 +286,10 @@ function sanizateQuery(query) {
     return query.replace(/\s+/ig, ' ');
 }
 
+var query = 'SELECT /* farm= SB label= idProperty */ P.ProductID, \n P.Name, \n P.ListPrice, \n P.Size /* naa */, \n P.ModifiedDate /* wee =  */, \n SOD.UnitPrice, \n SOD.UnitPriceDiscount,\n SOD.OrderQty,\n SOD.LineTotal \nFROM Sales.SalesOrderDetail SOD \nLEFT /* asd = asd */JOIN Production.Product P \nWHERE SOD.UnitPrice > 3500 \nAND SOD.OrderQty = @OrderQty\nORDER BY SOD.UnitPrice DESC';
+
 function getJson(query) {
     return JSON.stringify(parseQuery(query));
 }
+
+console.log(getJson(query));
